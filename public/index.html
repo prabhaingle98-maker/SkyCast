@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyCast - Weather App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>SkyCast</h2>
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      </div>
+      <div class="sidebar-content">
+        <div id="authSection" class="auth-section">
+          <a href="login.html" class="auth-btn">Login</a>
+          <a href="register.html" class="auth-btn">Register</a>
+        </div>
+        <div id="userSection" class="user-section" style="display: none;">
+          <span id="userName"></span>
+          <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+        
+        <h3>Favorites</h3>
+        <div id="favoritesList" class="favorites-list">
+          <p class="empty-msg">Login to save favorites</p>
+        </div>
+        
+        <h3 style="margin-top: 24px;">Recent</h3>
+        <div id="historyList" class="favorites-list"></div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <header>
+        <h1>Weather Forecast</h1>
+        <p>Search any city to get real-time weather</p>
+      </header>
+
+      <div class="top-bar">
+        <div class="search-box">
+          <input type="text" id="cityInput" placeholder="Enter city name..." />
+          <button onclick="getWeather()">Search</button>
+          <button onclick="detectLocation()" class="location-btn" title="Use my location">📍</button>
+        </div>
+        <div class="toggles">
+          <button class="toggle-unit" onclick="toggleUnit()" id="unitBtn">°C</button>
+          <button class="toggle-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        </div>
+      </div>
+
+      <div id="weatherResult" class="weather-result"></div>
+      <div id="airQualityResult" class="air-quality"></div>
+      <div id="clothingResult" class="clothing-advice"></div>
+      <div id="forecastResult" class="forecast-result"></div>
+      
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
