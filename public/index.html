@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyCast - Weather App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>SkyCast</h2>
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      </div>
+      <div class="sidebar-content">
+        <div id="authSection" class="auth-section">
+          <a href="login.html" class="auth-btn">Login</a>
+          <a href="register.html" class="auth-btn">Register</a>
+        </div>
+        <div id="userSection" class="user-section" style="display: none;">
+          <span id="userName"></span>
+          <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+        
+        <h3>Favorites</h3>
+        <div id="favoritesList" class="favorites-list">
+          <p class="empty-msg">Login to save favorites</p>
+        </div>
+        
+        <h3 style="margin-top: 24px;">Recent</h3>
+        <div id="historyList" class="favorites-list"></div>
+        
+        <h3 style="margin-top: 24px;">🔔 Notifications</h3>
+        <div class="sidebar-section">
+          <label class="toggle-label">
+            <input type="checkbox" id="dailyNotify" onchange="toggleDailyNotify()">
+            <span>Daily Weather Updates</span>
+          </label>
+          <div id="dailyTimeSection" class="time-picker-section" style="display: none;">
+            <label class="time-label">Select time:</label>
+            <div class="custom-time-picker">
+              <div class="time-inputs">
+                <input type="number" id="hourInput" min="1" max="12" value="8" class="time-input" onchange="updateCustomTime()">
+                <span class="time-separator">:</span>
+                <input type="number" id="minuteInput" min="0" max="59" value="00" class="time-input" onchange="updateCustomTime()">
+              </div>
+              <div class="ampm-toggle">
+                <button type="button" id="amBtn" class="ampm-btn active" onclick="setAMPM('AM')">AM</button>
+                <button type="button" id="pmBtn" class="ampm-btn" onclick="setAMPM('PM')">PM</button>
+              </div>
+            </div>
+            <div class="time-display" id="timeDisplay">8:00 AM</div>
+          </div>
+          <label class="toggle-label">
+            <input type="checkbox" id="alertNotify" onchange="toggleAlertNotify()">
+            <span>Weather Alerts</span>
+          </label>
+        </div>
+        
+        <h3 style="margin-top: 24px;">⚖️ Compare</h3>
+        <div class="sidebar-section">
+          <button class="compare-btn" onclick="openComparePage()">Compare Cities</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <header>
+        <h1>Weather Forecast</h1>
+        <p>Search any city to get real-time weather</p>
+      </header>
+
+      <div class="top-bar">
+      <div class="search-box">
+        <input
+          type="text"
+          id="cityInput"
+          placeholder="Search city..."
+          oninput="handleSearchInput(this.value)"
+          onkeydown="handleKeyDown(event)"
+          autocomplete="off"
+        />
+        <div id="searchSuggestions" class="search-suggestions"></div>
+        <button onclick="searchWeather()">Search</button>
+        <button onclick="detectLocation()" class="location-btn">📍</button>
+      </div>
+        <div class="toggles">
+          <button class="toggle-unit" onclick="toggleUnit()" id="unitBtn">°C</button>
+          <button class="toggle-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        </div>
+      </div>
+
+      <div id="weatherResult" class="weather-result"></div>
+      <div id="weatherAlerts" class="weather-alerts"></div>
+      <div id="moreDetails" class="more-details" style="display: none;"></div>
+      <button id="moreBtn" class="more-btn" onclick="toggleMoreDetails()" style="display: none;">More Details ▼</button>
+      <div id="map" class="map-container"></div>
+      <div id="airQualityResult" class="air-quality"></div>
+      <div id="clothingResult" class="clothing-advice"></div>
+      <div id="forecastResult" class="forecast-result"></div>
+      
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
