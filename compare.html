@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Cities - SkyCast</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="compare-page">
+    <div class="compare-header">
+      <h1>⚖️ Compare Cities</h1>
+      <a href="index.html" class="back-btn">← Back to Home</a>
+    </div>
+    
+    <div class="compare-inputs">
+      <div class="city-input-group">
+        <label>City 1</label>
+        <input type="text" id="city1" placeholder="Enter first city...">
+      </div>
+      
+      <div class="vs-divider">VS</div>
+      
+      <div class="city-input-group">
+        <label>City 2</label>
+        <input type="text" id="city2" placeholder="Enter second city...">
+      </div>
+      
+      <button class="compare-action-btn" onclick="compareCities()">Compare</button>
+    </div>
+    
+    <div id="compareResult" class="compare-result"></div>
+  </div>
+  
+  <script>
+    const API = window.location.origin + '/api';
+    
+    async function compareCities() {
+      const city1 = document.getElementById('city1').value.trim();
+      const city2 = document.getElementById('city2').value.trim();
+      
+      if (!city1 || !city2) {
+        alert('Please enter both cities');
+        return;
+      }
+      
+      try {
+        const [res1, res2] = await Promise.all([
+          fetch(`${API}/weather/${city1}`),
+          fetch(`${API}/weather/${city2}`)
+        ]);
+        
+        const data1 = await res1.json();
+        const data2 = await res2.json();
+        
+        if (data1.error || data2.error) {
+          document.getElementById('compareResult').innerHTML = '<p class="error">One or both cities not found</p>';
+          return;
+        }
+        
+        displayComparison(data1, data2);
+      } catch (err) {
+        console.error('Compare failed:', err);
+        document.getElementById('compareResult').innerHTML = '<p class="error">Failed to compare cities</p>';
+      }
+    }
+    
+    function displayComparison(data1, data2) {
+      const winner = data1.temp > data2.temp ? data1.name : data2.name;
+      const tempDiff = Math.abs(data1.temp - data2.temp).toFixed(1);
+      
+      const html = `
+        <div class="compare-cards">
+          <div class="compare-card">
+            <h2>${data1.name}, ${data1.country || ''}</h2>
+            <div class="weather-icon-large">${getWeatherIcon(data1.condition)}</div>
+            <div class="temp-large">${data1.temp}°C</div>
+            <div class="condition">${data1.condition}</div>
+            
+            <div class="compare-details">
+              <div class="detail-row">
+                <span>💨 Wind</span>
+                <span>${data1.wind} km/h</span>
+              </div>
+              <div class="detail-row">
+                <span>💧 Humidity</span>
+                <span>${data1.humidity || 'N/A'}%</span>
+              </div>
+              <div class="detail-row">
+                <span>🌡 Feels Like</span>
+                <span>${data1.feelsLike || 'N/A'}°C</span>
+              </div>
+              <div class="detail-row">
+                <span>☀️ UV Index</span>
+                <span>${data1.uvIndex || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span>📊 Pressure</span>
+                <span>${data1.pressure ? Math.round(data1.pressure) : 'N/A'} hPa</span>
+              </div>
+              <div class="detail-row">
+                <span>☁️ Cloud Cover</span>
+                <span>${data1.cloudCover || 'N/A'}%</span>
+              </div>
+              <div class="detail-row">
+                <span>👁️ Visibility</span>
+                <span>${data1.visibility ? (data1.visibility / 1000).toFixed(1) : 'N/A'} km</span>
+              </div>
+              <div class="detail-row">
+                <span>🌧️ Precipitation</span>
+                <span>${data1.precipitation || '0'} mm</span>
+              </div>
+              <div class="detail-row">
+                <span>🌅 Sunrise</span>
+                <span>${data1.sunrise ? new Date(data1.sunrise).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span>🌇 Sunset</span>
+                <span>${data1.sunset ? new Date(data1.sunset).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</span>
+              </div>
+              ${data1.aqi ? `
+              <div class="detail-row">
+                <span>🌬️ Air Quality</span>
+                <span style="color: ${getAQIColor(data1.aqi)}">${data1.aqi} - ${getAQIText(data1.aqi)}</span>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+          
+          <div class="vs-center">
+            <div class="vs-badge">VS</div>
+            <div class="winner-badge">🏆 ${winner} is warmer!</div>
+            <div class="temp-diff">${tempDiff}°C difference</div>
+          </div>
+          
+          <div class="compare-card">
+            <h2>${data2.name}, ${data2.country || ''}</h2>
+            <div class="weather-icon-large">${getWeatherIcon(data2.condition)}</div>
+            <div class="temp-large">${data2.temp}°C</div>
+            <div class="condition">${data2.condition}</div>
+            
+            <div class="compare-details">
+              <div class="detail-row">
+                <span>💨 Wind</span>
+                <span>${data2.wind} km/h</span>
+              </div>
+              <div class="detail-row">
+                <span>💧 Humidity</span>
+                <span>${data2.humidity || 'N/A'}%</span>
+              </div>
+              <div class="detail-row">
+                <span>🌡 Feels Like</span>
+                <span>${data2.feelsLike || 'N/A'}°C</span>
+              </div>
+              <div class="detail-row">
+                <span>☀️ UV Index</span>
+                <span>${data2.uvIndex || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span>📊 Pressure</span>
+                <span>${data2.pressure ? Math.round(data2.pressure) : 'N/A'} hPa</span>
+              </div>
+              <div class="detail-row">
+                <span>☁️ Cloud Cover</span>
+                <span>${data2.cloudCover || 'N/A'}%</span>
+              </div>
+              <div class="detail-row">
+                <span>👁️ Visibility</span>
+                <span>${data2.visibility ? (data2.visibility / 1000).toFixed(1) : 'N/A'} km</span>
+              </div>
+              <div class="detail-row">
+                <span>🌧️ Precipitation</span>
+                <span>${data2.precipitation || '0'} mm</span>
+              </div>
+              <div class="detail-row">
+                <span>🌅 Sunrise</span>
+                <span>${data2.sunrise ? new Date(data2.sunrise).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span>🌇 Sunset</span>
+                <span>${data2.sunset ? new Date(data2.sunset).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</span>
+              </div>
+              ${data2.aqi ? `
+              <div class="detail-row">
+                <span>🌬️ Air Quality</span>
+                <span style="color: ${getAQIColor(data2.aqi)}">${data2.aqi} - ${getAQIText(data2.aqi)}</span>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('compareResult').innerHTML = html;
+    }
+    
+    function getWeatherIcon(condition) {
+      if (!condition) return '🌡️';
+      if (condition.includes('Clear')) return '☀️';
+      if (condition.includes('cloud') || condition.includes('Overcast')) return '☁️';
+      if (condition.includes('rain') || condition.includes('drizzle')) return '🌧️';
+      if (condition.includes('snow')) return '🌨️';
+      if (condition.includes('Thunder')) return '⛈️';
+      if (condition.includes('Fog')) return '🌫️';
+      return '🌡️';
+    }
+    
+    function getAQIColor(aqi) {
+      if (aqi <= 20) return '#10b981';
+      if (aqi <= 40) return '#84cc16';
+      if (aqi <= 60) return '#f59e0b';
+      if (aqi <= 80) return '#f97316';
+      if (aqi <= 100) return '#ef4444';
+      return '#7f1d1d';
+    }
+    
+    function getAQIText(aqi) {
+      if (aqi <= 20) return 'Good';
+      if (aqi <= 40) return 'Fair';
+      if (aqi <= 60) return 'Moderate';
+      if (aqi <= 80) return 'Poor';
+      if (aqi <= 100) return 'Very Poor';
+      return 'Extremely Poor';
+    }
+    
+    // Allow Enter key to compare
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('city2').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') compareCities();
+      });
+    });
+  </script>
+</body>
+</html>
