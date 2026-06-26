@@ -1328,6 +1328,73 @@ body.light .time-display {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Floating Telegram CTA Button */
+.telegram-float-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #0088cc 0%, #00a8e8 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 136, 204, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  text-decoration: none;
+}
+
+.telegram-float-btn:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0 8px 30px rgba(0, 136, 204, 0.6);
+}
+
+.telegram-float-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Tooltip for Telegram button */
+.telegram-float-btn::before {
+  content: "Chat with Weather Bot";
+  position: absolute;
+  right: 70px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.telegram-float-btn:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Animation for Telegram button */
+@keyframes telegramPulse {
+  0% {
+    box-shadow: 0 4px 20px rgba(0, 136, 204, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(0, 136, 204, 0.7);
+  }
+  100% {
+    box-shadow: 0 4px 20px rgba(0, 136, 204, 0.4);
+  }
+}
+
+.telegram-float-btn {
+  animation: telegramPulse 2s infinite;
+}
+
 /* Chat Input Area */
 .chat-input-area {
   display: flex;
