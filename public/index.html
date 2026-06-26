@@ -105,6 +105,28 @@
       <div id="clothingResult" class="clothing-advice"></div>
       <div id="forecastResult" class="forecast-result"></div>
       
+      <!-- Telegram Chat Section -->
+      <div class="chat-section" id="chatSection">
+        <h3 class="chat-header">💬 Weather Chat</h3>
+        <div class="telegram-chat-intro">
+          <div class="telegram-icon">📱</div>
+          <p class="chat-description">Chat with our Weather Bot on Telegram for instant weather updates!</p>
+          <div class="telegram-buttons">
+            <a href="https://t.me/skycast_wbot?start=welcome" target="_blank" rel="noopener noreferrer" class="telegram-btn" onclick="openTelegramChat()">
+              <span class="telegram-logo">✈️</span> Open in Telegram
+            </a>
+            <button class="web-chat-btn" onclick="startWebChat()">
+              💬 Chat Here
+            </button>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages" style="display: none;"></div>
+        <div class="chat-input-area" id="chatInputArea" style="display: none;">
+          <input type="text" id="chatInput" placeholder="Ask about weather..." onkeypress="handleChatKeyPress(event)">
+          <button onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+      
 
     </main>
   </div>

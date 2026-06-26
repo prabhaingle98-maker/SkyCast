@@ -476,7 +476,16 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8924673496:AAGHEJ7
 
 if (TELEGRAM_BOT_TOKEN) {
     const TelegramBot = require('node-telegram-bot-api');
-    bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+    bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { 
+      polling: true,
+      request: {
+        agentClass: require('https').Agent,
+        agentOptions: {
+          keepAlive: true,
+          rejectUnauthorized: false
+        }
+      }
+    });
     
     bot.onText(/\/start/, (msg) => {
       const welcomeMsg = `Welcome to SkyCast Weather Bot! 🌤\n\nHere\'s what I can do:\n\n🌡️ Send me a city name for weather\n📍 Share your location for local weather\n📅 Use /forecast for 5-day forecast\n💨 Use /aqi for air quality\n⭐ Use /save to save favorites\n📋 Use /favorites to view saved cities\n⚖️ Use /compare to compare cities\n\nTry it now!`;
@@ -673,7 +682,7 @@ if (TELEGRAM_BOT_TOKEN) {
         const favorites = userFavorites[userId] || [];
         
         if (favorites.length === 0) {
-          bot.sendMessage(chatId, 'No favorites yet! Use /save \u003ccity\u003e to add cities.');
+          bot.sendMessage(chatId, 'No favorites yet! Use /save <city> to add cities.');
         } else {
           const keyboard = favorites.map(city => ([{
             text: `🌍 ${city}`,
@@ -699,6 +708,68 @@ if (TELEGRAM_BOT_TOKEN) {
           bot.sendMessage(chatId, `🌍 ${location.name}, ${countryName}\n\n🌡 Temperature: ${weather.temperature}°C\n💨 Wind: ${weather.windspeed} km/h\n☁️ Condition: ${condition}\n\n📍 Location: ${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`);
         } catch (err) {
           bot.sendMessage(chatId, `Sorry, could not get weather for "${city}".`);
+        }
+      } else if (data.startsWith('forecast_')) {
+        const city = data.replace('forecast_', '');
+        try {
+          const location = await getCoordinates(city);
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+          const response = await axios.get(url);
+          const daily = response.data.daily;
+          
+          let forecastText = `📅 5-Day Forecast for ${location.name}\n\n`;
+          
+          for (let i = 0; i < 5; i++) {
+            const date = new Date(daily.time[i]);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const maxTemp = Math.round(daily.temperature_2m_max[i]);
+            const minTemp = Math.round(daily.temperature_2m_min[i]);
+            const condition = getWeatherCondition(daily.weathercode[i]);
+            const icon = getWeatherIcon(condition);
+            
+            forecastText += `${icon} ${dayName}: ${maxTemp}°C / ${minTemp}°C - ${condition}\n`;
+          }
+          
+          bot.sendMessage(chatId, forecastText);
+        } catch (err) {
+          bot.sendMessage(chatId, `Sorry, could not get forecast for "${city}".`);
+        }
+      } else if (data.startsWith('aqi_')) {
+        const city = data.replace('aqi_', '');
+        try {
+          const location = await getCoordinates(city);
+          const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${location.latitude}&longitude=${location.longitude}&current=european_aqi,pm10,pm2_5,ozone`;
+          const response = await axios.get(url);
+          const current = response.data.current;
+          
+          const aqi = current.european_aqi;
+          const aqiLevel = getAQILevel(aqi);
+          
+          const aqiText = `🌬️ Air Quality for ${location.name}\n\n` +
+            `📊 AQI: ${aqi} - ${aqiLevel.text}\n` +
+            `🎨 Level: ${aqiLevel.emoji}\n\n` +
+            `🏭 PM10: ${current.pm10} μg/m³\n` +
+            `😷 PM2.5: ${current.pm2_5} μg/m³\n` +
+            `🌫️ Ozone: ${current.ozone} μg/m³\n\n` +
+            `${aqiLevel.advice}`;
+          
+          bot.sendMessage(chatId, aqiText);
+        } catch (err) {
+          bot.sendMessage(chatId, `Sorry, could not get air quality for "${city}".`);
+        }
+      } else if (data.startsWith('save_')) {
+        const city = data.replace('save_', '');
+        const userId = query.from.id;
+        
+        if (!userFavorites[userId]) {
+          userFavorites[userId] = [];
+        }
+        
+        if (!userFavorites[userId].includes(city)) {
+          userFavorites[userId].push(city);
+          bot.sendMessage(chatId, `⭐ Saved "${city}" to your favorites!\n\nView with /favorites`);
+        } else {
+          bot.sendMessage(chatId, `"${city}" is already in your favorites!`);
         }
       } else if (data === 'clear_favorites') {
         const userId = query.from.id;

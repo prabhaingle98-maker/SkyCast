@@ -487,6 +487,179 @@ function checkNotificationPrefs() {
 // Call on load
 document.addEventListener('DOMContentLoaded', checkNotificationPrefs);
 
+// Telegram Chat Functions
+function openTelegramChat() {
+  // Track that user opened Telegram chat
+  localStorage.setItem('skycast_telegram_chat_opened', 'true');
+  
+  // Try multiple ways to open Telegram
+  const telegramUrl = 'https://telegram.me/skycast_weather_bot';
+  const telegramAppUrl = 'tg://resolve?domain=skycast_weather_bot';
+  
+  // Try to open Telegram app first, then fallback to web
+  window.open(telegramUrl, '_blank');
+  
+  // Show message to user
+  setTimeout(() => {
+    alert('If Telegram did not open automatically, you can search for "@skycast_weather_bot" in Telegram app.');
+  }, 500);
+}
+
+function startWebChat() {
+  // Hide intro, show chat interface
+  document.querySelector('.telegram-chat-intro').style.display = 'none';
+  document.getElementById('chatMessages').style.display = 'flex';
+  document.getElementById('chatInputArea').style.display = 'flex';
+  
+  // Show welcome message from bot
+  showWelcomeMessage();
+}
+
+function showWelcomeMessage() {
+  const chatMessages = document.getElementById('chatMessages');
+  
+  // Clear existing messages
+  chatMessages.innerHTML = '';
+  
+  // Add bot welcome message
+  const welcomeDiv = document.createElement('div');
+  welcomeDiv.className = 'chat-message bot';
+  
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  welcomeDiv.innerHTML = `
+    👋 Hello! Welcome to SkyCast Weather Chat! 🌤️<br><br>
+    I can help you with:<br>
+    • Weather for any city<br>
+    • 5-day forecast<br>
+    • Air quality info<br>
+    • Compare cities<br>
+    • Weather alerts<br><br>
+    Just type a city name or ask me anything!
+    <span class="timestamp">${timestamp}</span>
+  `;
+  
+  chatMessages.appendChild(welcomeDiv);
+  
+  // Add a second message with suggestion
+  setTimeout(() => {
+    const suggestionDiv = document.createElement('div');
+    suggestionDiv.className = 'chat-message bot';
+    
+    const timestamp2 = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    suggestionDiv.innerHTML = `
+      💡 Try asking:<br>
+      • "What's the weather in London?"<br>
+      • "Will it rain tomorrow?"<br>
+      • "Compare Mumbai and Delhi"<br>
+      • "Show me forecast for Paris"
+      <span class="timestamp">${timestamp2}</span>
+    `;
+    
+    chatMessages.appendChild(suggestionDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }, 500);
+}
+
+function handleChatKeyPress(event) {
+  if (event.key === 'Enter') {
+    sendChatMessage();
+  }
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  // Add user message
+  addChatMessage(message, 'user');
+  input.value = '';
+  
+  // Process bot response
+  processBotResponse(message);
+}
+
+function addChatMessage(text, sender) {
+  const chatMessages = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `chat-message ${sender}`;
+  
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  messageDiv.innerHTML = `
+    ${text}
+    <span class="timestamp">${timestamp}</span>
+  `;
+  
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function processBotResponse(userMessage) {
+  const chatMessages = document.getElementById('chatMessages');
+  
+  // Show typing indicator
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'chat-message bot typing';
+  typingDiv.innerHTML = 'Typing...';
+  typingDiv.id = 'typingIndicator';
+  chatMessages.appendChild(typingDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  // Simulate processing delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Remove typing indicator
+  const typingIndicator = document.getElementById('typingIndicator');
+  if (typingIndicator) {
+    typingIndicator.remove();
+  }
+  
+  // Generate bot response based on user message
+  let botResponse = generateBotResponse(userMessage);
+  
+  addChatMessage(botResponse, 'bot');
+}
+
+function generateBotResponse(message) {
+  const lowerMessage = message.toLowerCase();
+  
+  // Weather-related queries
+  if (lowerMessage.includes('weather') || lowerMessage.includes('temperature')) {
+    return "I can help you check the weather! Just search for a city above and I'll show you the current conditions. 🌤️";
+  }
+  
+  if (lowerMessage.includes('forecast')) {
+    return "Click on 'More Details' after searching a city to see the 5-day forecast! 📅";
+  }
+  
+  if (lowerMessage.includes('rain') || lowerMessage.includes('raining')) {
+    return "I can check if it's raining! Search for your city and look at the weather alerts. 🌧️";
+  }
+  
+  if (lowerMessage.includes('compare')) {
+    return "Use the Compare Cities feature in the sidebar to compare weather between two cities! ⚖️";
+  }
+  
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+    return "Hello! 👋 I'm your weather assistant. Ask me anything about weather or search for a city above!";
+  }
+  
+  if (lowerMessage.includes('help')) {
+    return "I can help you with:\n• Check weather for any city\n• 5-day forecast\n• Air quality index\n• Compare cities\n• Weather alerts\n\nJust search for a city above! 🌍";
+  }
+  
+  if (lowerMessage.includes('thank')) {
+    return "You're welcome! 😊 Happy to help with weather info anytime!";
+  }
+  
+  // Default response
+  return "I'm not sure about that. Try searching for a city above to get weather information, or ask me about weather-related topics! 🌤️";
+}
+
 // Search suggestions
 let suggestionTimeout = null;
 let selectedSuggestionIndex = -1;
