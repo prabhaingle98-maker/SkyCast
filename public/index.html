@@ -6,6 +6,8 @@
   <title>SkyCast - Weather App</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   <div class="app">
@@ -32,6 +34,38 @@
         
         <h3 style="margin-top: 24px;">Recent</h3>
         <div id="historyList" class="favorites-list"></div>
+        
+        <h3 style="margin-top: 24px;">🔔 Notifications</h3>
+        <div class="sidebar-section">
+          <label class="toggle-label">
+            <input type="checkbox" id="dailyNotify" onchange="toggleDailyNotify()">
+            <span>Daily Weather Updates</span>
+          </label>
+          <div id="dailyTimeSection" class="time-picker-section" style="display: none;">
+            <label class="time-label">Select time:</label>
+            <div class="custom-time-picker">
+              <div class="time-inputs">
+                <input type="number" id="hourInput" min="1" max="12" value="8" class="time-input" onchange="updateCustomTime()">
+                <span class="time-separator">:</span>
+                <input type="number" id="minuteInput" min="0" max="59" value="00" class="time-input" onchange="updateCustomTime()">
+              </div>
+              <div class="ampm-toggle">
+                <button type="button" id="amBtn" class="ampm-btn active" onclick="setAMPM('AM')">AM</button>
+                <button type="button" id="pmBtn" class="ampm-btn" onclick="setAMPM('PM')">PM</button>
+              </div>
+            </div>
+            <div class="time-display" id="timeDisplay">8:00 AM</div>
+          </div>
+          <label class="toggle-label">
+            <input type="checkbox" id="alertNotify" onchange="toggleAlertNotify()">
+            <span>Weather Alerts</span>
+          </label>
+        </div>
+        
+        <h3 style="margin-top: 24px;">⚖️ Compare</h3>
+        <div class="sidebar-section">
+          <button class="compare-btn" onclick="openComparePage()">Compare Cities</button>
+        </div>
       </div>
     </aside>
 
@@ -43,11 +77,19 @@
       </header>
 
       <div class="top-bar">
-        <div class="search-box">
-          <input type="text" id="cityInput" placeholder="Enter city name..." />
-          <button onclick="getWeather()">Search</button>
-          <button onclick="detectLocation()" class="location-btn" title="Use my location">📍</button>
-        </div>
+      <div class="search-box">
+        <input
+          type="text"
+          id="cityInput"
+          placeholder="Search city..."
+          oninput="handleSearchInput(this.value)"
+          onkeydown="handleKeyDown(event)"
+          autocomplete="off"
+        />
+        <div id="searchSuggestions" class="search-suggestions"></div>
+        <button onclick="searchWeather()">Search</button>
+        <button onclick="detectLocation()" class="location-btn">📍</button>
+      </div>
         <div class="toggles">
           <button class="toggle-unit" onclick="toggleUnit()" id="unitBtn">°C</button>
           <button class="toggle-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
@@ -55,13 +97,46 @@
       </div>
 
       <div id="weatherResult" class="weather-result"></div>
+      <div id="weatherAlerts" class="weather-alerts"></div>
+      <div id="moreDetails" class="more-details" style="display: none;"></div>
+      <button id="moreBtn" class="more-btn" onclick="toggleMoreDetails()" style="display: none;">More Details ▼</button>
+      <div id="map" class="map-container"></div>
       <div id="airQualityResult" class="air-quality"></div>
       <div id="clothingResult" class="clothing-advice"></div>
       <div id="forecastResult" class="forecast-result"></div>
       
+      <!-- Telegram Chat Section -->
+      <div class="chat-section" id="chatSection">
+        <h3 class="chat-header">💬 Weather Chat</h3>
+        <div class="telegram-chat-intro">
+          <div class="telegram-icon">📱</div>
+          <p class="chat-description">Chat with our Weather Bot on Telegram for instant weather updates!</p>
+          <div class="telegram-buttons">
+            <a href="https://t.me/skycast_wbot?start=welcome" target="_blank" rel="noopener noreferrer" class="telegram-btn" onclick="openTelegramChat()">
+              <span class="telegram-logo">✈️</span> Open in Telegram
+            </a>
+            <button class="web-chat-btn" onclick="startWebChat()">
+              💬 Chat Here
+            </button>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages" style="display: none;"></div>
+        <div class="chat-input-area" id="chatInputArea" style="display: none;">
+          <input type="text" id="chatInput" placeholder="Ask about weather..." onkeypress="handleChatKeyPress(event)">
+          <button onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+      
 
     </main>
   </div>
+
+  <!-- Floating Telegram CTA Button -->
+  <a href="https://t.me/skycast_wbot?start=welcome" target="_blank" rel="noopener noreferrer" class="telegram-float-btn" title="Chat with Weather Bot">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21.5 4.5L2.5 11.5L9.5 14.5L16.5 8.5L11.5 15.5L18.5 18.5L21.5 4.5Z" fill="white"/>
+    </svg>
+  </a>
 
   <script src="app.js"></script>
 </body>
